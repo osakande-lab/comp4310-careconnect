@@ -1,47 +1,42 @@
 # CareConnect
 
-COMP 4310 - Web Health Informatics, Lakehead University
+COMP 4310 Web Health Informatics, Lakehead University  
+P4 prototype by Oluwatolayomi Akande
 
-## Team
+CareConnect demonstrates cross-clinic appointment discovery and cancellation reuse for rural and remote communities. Its data is fictional. The application runs only on localhost and uses demo account switching. It is intended for a lab demonstration.
 
-- Oluwatolayomi Akande — osakande@lakeheadu.ca
-- Brandon Shrigley — bshrigl1@lakeheadu.ca
+## Run
 
-## Preliminary project title
+Requires Python 3.11 or newer. There are no third-party dependencies, environment variables or credentials.
 
-CareConnect: A Web-Based Prototype for Healthcare Appointment Access in Rural and Remote Communities
+```text
+python app.py --reset
+```
 
-## Project area
+Open http://127.0.0.1:8000. The command resets the default fictional database to three clinics, three appointment slots, three patient accounts and two clinic staff accounts. The schema is in `schema.sql`, and the seed is in `scheduling.py`. Dates are displayed in UTC and start relative to the time the demo database is reset. Stop the server before resetting. Use `--port 8001` if port 8000 is occupied. The normal offer window is 30 minutes, capped at the appointment start. Use `--offer-seconds 60` for a separate expiry demonstration.
 
-Student-proposed project: healthcare accessibility, appointment scheduling, and rural and remote healthcare.
+## Lab demo
 
-## Project idea
+1. **Patient A.** Filter search to Primary care and point out the Pine River in-person and Cedar Bay virtual slots. Request the Pine River opening. Show the Requested status.
+2. **Pine River Staff.** Confirm Patient A’s booking. Switch to Patient A and show Confirmed.
+3. **Patient B.** Under My waitlist, choose Pine River Clinic, Primary care, In person, and 7 days. Join.
+4. **Patient A.** Cancel the confirmed appointment.
+5. **Pine River Staff.** Open Released appointments. Patient C joined earlier but fails Pine River’s registration requirement. Patient B is next eligible. Issue the offer and show the recorded reasons in Offer history.
+6. **Patient B.** Accept the offer. Show the Requested booking and explain that staff confirmation is still required.
+7. **Pine River Staff.** Confirm Patient B. Show Patient B’s Confirmed booking and the earlier cancellation in the staff view.
 
-Our project will explore how a web-based platform could help patients find available healthcare appointments and improve access for rural and remote communities. We plan to develop a prototype that allows users to search participating clinics, compare appointment availability, and request in-person or virtual consultations. Clinic staff would manage appointment slots and maintain a cancellation waitlist to help fill openings. Potential users include patients, clinic administrators, and healthcare providers. Using simulated clinic and appointment data, we will evaluate usability and scheduling performance to investigate whether the proposed approach could reduce booking delays and help patients identify care options closer to home.
+The account picker works in a single browser window. Separate browser profiles are optional. Refresh any open page after an action in another session to see the updated state.
 
-## Planned prototype features
+## Implementation and checks
 
-- Search clinics by location and available services.
-- Compare available appointment slots and consultation types.
-- Request in-person or virtual appointments.
-- Allow clinic staff to manage availability and appointment requests.
-- Maintain a cancellation waitlist to help fill openings.
+`app.py` handles HTTP, forms, local sessions, demo-account access and role-specific pages. `scheduling.py` implements search, booking transitions, eligibility, offer lifecycle and audit records. SQLite write transactions and partial unique indexes protect slot and offer reservations. The app checks expiration on page loads and writes. The staff queue is refreshed manually.
 
-## Preliminary technology stack
+```text
+python -m unittest -v
+```
 
-- Frontend: HTML, CSS, and JavaScript
-- Backend: Python with Flask
-- Database: SQLite
-- Collaboration: GitHub
+Six HTTP integration tests cover cross-clinic search, the complete cancellation-to-rebooking flow, simultaneous booking requests, role and ownership checks, expired offers and offer replay. Tests exercise the HTTP handler in memory with a temporary database and a controllable clock.
 
-## Scope and evaluation
+## P5 work
 
-The prototype will use synthetic patient records and simulated clinic and appointment data. Virtual consultations are an appointment type; integrated video consultations and connections to real healthcare systems are outside the initial scope.
-
-Planned evaluation includes testing booking and cancellation workflows, preventing conflicting bookings, checking waitlist behavior, and evaluating usability through representative tasks. Simulated results will not establish reductions in real public healthcare wait times.
-
-## Project status
-
-P0: preliminary team formation and topic selection. The topic and technology choices may be refined during P1 and through instructor/TA feedback. Instructor/TA approval is required before substantial development begins.
-
-No runnable application has been implemented yet. This repository will hold the prototype, project documentation, and evaluation materials.
+Add staff slot creation and editing, staff-assisted booking, richer waitlist windows, and more comprehensive audit coverage. Expand the seed data and run the paired manual-versus-waitlist evaluation. Verify keyboard and narrow-screen usability, and measure search latency. The local demo account picker needs replacement if the application ever handles real identities.
